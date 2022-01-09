@@ -80,6 +80,7 @@
     "stylelint-config-css-modules": "2.2.0",
     "stylelint-config-lost": "0.0.3",
     "stylelint-config-recess-order": "2.5.0",
+    "stylelint-config-recommended-vue": "^1.1.0",
     "stylelint-config-standard": "^23.0.0",
     "vue-svg-loader": "0.16.0"
   },
@@ -90,6 +91,7 @@
     "@nuxtjs/pwa": "3.3.5",
     "@nuxtjs/robots": "2.5.0",
     "@nuxtjs/sitemap": "2.4.0",
+    "@withshepherd/faker": "git+https://github.com/withshepherd/faker.js.git",
     "core-js": "3.19.1",
     "nuxt": "2.15.8",
     "nuxt-i18n": "6.28.1",
@@ -98,7 +100,8 @@
     "object-fit-images": "github:StephanGerbeth/object-fit-images",
     "reqlim": "0.0.0",
     "rxjs": "7.4.0",
-    "snyk": "1.753.0"
+    "snyk": "1.753.0",
+    "vue-lorem-ipsum": "0.0.1"
   },
   "optionalDependencies": {
     "picturefill": "3.0.3",

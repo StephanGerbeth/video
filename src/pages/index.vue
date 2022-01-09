@@ -1,14 +1,47 @@
-<script>
+<template>
+  <main>
+    <p>{{ getText(50) }}</p>
+    <div class="box" />
+    <p>{{ getText(50) }}</p>
+    <you-tube-video />
+    <p>{{ getText(100) }}</p>
+  </main>
+</template>
 
-import ContentExtend from '@/extends/Content';
+<script>
+// https://fakerjsdocs.netlify.app/api/lorem.html#sentences-sentencecount-separator
+import faker from '@withshepherd/faker';
+import YouTubeVideo from '@/components/atoms/YouTube.vue';
 
 export default {
-  extends: ContentExtend,
-  nuxtI18n: {
-    paths: {
-      de: '/',
-      en: '/'
+  components: {
+    YouTubeVideo
+  },
+
+  methods: {
+    getText (count = 10) {
+      return faker.lorem.paragraph(count);
     }
   }
 };
 </script>
+
+<style lang="postcss" scoped>
+.box {
+  width: 100%;
+  height: 100px;
+  background: red;
+
+  @media (orientation: landscape) {
+    height: 400px;
+  }
+}
+
+/* main {
+  @media (orientation: landscape) {
+    & p {
+      display: none;
+    }
+  }
+} */
+</style>>
