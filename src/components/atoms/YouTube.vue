@@ -42,6 +42,7 @@ export default {
   },
 
   mounted () {
+    console.log('TEST', window.innerHeight, window.innerWidth, window.outerHeight, window.outerWidth);
     fromEvent(window, 'resize')
       .pipe(
         startWith(0),
@@ -58,9 +59,7 @@ export default {
           this.bottom = this.height - (this.top + rect.height);
           this.left = rect.left + window.scrollX;
           this.right = this.width - (this.left + rect.width);
-          const topVideo = (window.innerHeight - rect.height) / 2;
-          // console.log(window.scrollY, rect.top, rect.height);
-          this.offsetTop = topVideo - rect.top;
+          this.offsetTop = ((window.innerHeight - rect.height) / 2) - rect.top;
           // this.offsetTop = this.top;
           console.log(this.top);
         } else {
@@ -101,7 +100,6 @@ div {
   --offset-top: 0;
 
   width: 100%;
-  aspect-ratio: 712/375;
   margin: 0;
 
   & iframe {
@@ -109,8 +107,8 @@ div {
     top: 0;
     bottom: 0;
     display: block;
-    width: 100vw;
-    aspect-ratio: 712/375;
+    width: 100%;
+    aspect-ratio: 16/9;
     transition-duration: 350ms;
     transition-property: transform;
   }
@@ -123,6 +121,7 @@ div {
 
     & iframe {
       height: 100vh;
+      aspect-ratio: none;
       transform: translateY(calc(var(--offset-top) * 1px));
     }
   }
