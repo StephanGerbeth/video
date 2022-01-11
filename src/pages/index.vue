@@ -1,7 +1,7 @@
 <template>
   <main>
     <p>{{ getText(50) }}</p>
-    <div class="box" />
+    <div class="box" @click="setFullscreen()" />
     <p>{{ getText(50) }}</p>
     <you-tube-video />
     <p>{{ getText(100) }}</p>
@@ -21,6 +21,10 @@ export default {
   methods: {
     getText (count = 10) {
       return faker.lorem.paragraph(count);
+    },
+
+    setFullscreen () {
+      window.scrollTo(0, 400);
     }
   }
 };
@@ -36,12 +40,4 @@ export default {
     height: 400px;
   }
 }
-
-/* main {
-  @media (orientation: landscape) {
-    & p {
-      display: none;
-    }
-  }
-} */
 </style>>

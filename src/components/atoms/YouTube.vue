@@ -59,9 +59,12 @@ export default {
           this.bottom = this.height - (this.top + rect.height);
           this.left = rect.left + window.scrollX;
           this.right = this.width - (this.left + rect.width);
+
           this.offsetTop = ((window.innerHeight - rect.height) / 2) - rect.top;
-          // this.offsetTop = this.top;
-          console.log(this.top);
+
+          setTimeout(() => {
+            this.$el.classList.add('fullscreen');
+          }, 1000);
         } else {
           this.width = 16;
           this.height = 9;
@@ -70,21 +73,9 @@ export default {
           this.left = null;
           this.right = null;
           this.offsetTop = null;
+          this.$el.classList.remove('fullscreen');
         }
-      // console.log(this.x, this.yTop + rect.height, this.height);
       });
-
-    // fromEvent(window, 'orientationchange').subscribe(() => {
-    //   console.log('O');
-    //   // const windowInnerWidth = window.innerWidth;
-    //   const windowInnerHeight = window.innerHeight;
-    //   // console.log(windowInnerWidth, windowInnerHeight);
-    //   const rect = this.$el.getBoundingClientRect();
-    //   const topVideo = (windowInnerHeight - rect.height) / 2;
-    //   console.log(window.scrollY, rect.top, rect.height);
-    //   this.offsetTop = topVideo - rect.top;
-    //   // console.log(rect);
-    // });
   }
 };
 </script>
@@ -117,12 +108,24 @@ div {
     /* position: relative;
     aspect-ratio: calc(var(--width) / var(--height));
     margin: calc(var(--top) * -1px) calc(var(--right) * -1px) calc(var(--bottom) * -1px) calc(var(--left) * -1px);
-    background-color: black; */
+    */
+
+    background-color: black;
 
     & iframe {
       height: 100vh;
       aspect-ratio: none;
       transform: translateY(calc(var(--offset-top) * 1px));
+    }
+
+    &.fullscreen {
+      aspect-ratio: calc(var(--width) / var(--height));
+      margin: calc(var(--top) * -1px) calc(var(--right) * -1px) calc(var(--bottom) * -1px) calc(var(--left) * -1px);
+
+      & iframe {
+        transition-property: none;
+        transform: none;
+      }
     }
   }
 }
