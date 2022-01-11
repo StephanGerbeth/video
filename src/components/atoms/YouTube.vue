@@ -1,5 +1,5 @@
 <template>
-  <div :style="cssVars">
+  <div :class="{expanded}" :style="cssVars">
     <iframe
       width="640"
       src="https://www.youtube.com/embed/c2cxzy-Dar4"
@@ -12,8 +12,8 @@
 </template>
 
 <script>
-import { fromEvent } from 'rxjs';
-import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
+import { fromEvent, firstValueFrom } from 'rxjs';
+import { distinctUntilChanged, map, startWith, filter, shareReplay } from 'rxjs/operators';
 
 export default {
   data () {
@@ -22,8 +22,8 @@ export default {
       bottom: 0,
       left: 0,
       right: 0,
-      width: 16,
-      height: 9
+      aspectRatio: 16 / 9,
+      expanded: false
     };
   },
 
@@ -34,48 +34,56 @@ export default {
         '--bottom': this.bottom,
         '--left': this.left,
         '--right': this.right,
-        '--width': this.width,
-        '--height': this.height,
+        '--aspect-ratio': this.aspectRatio,
         '--offset-top': this.offsetTop
       };
     }
   },
 
   mounted () {
-    console.log('TEST', window.innerHeight, window.innerWidth, window.outerHeight, window.outerWidth);
-    fromEvent(window, 'resize')
-      .pipe(
-        startWith(0),
-        map(() => window.orientation),
-        distinctUntilChanged((prev, curr) => prev === curr)
-      )
+    const resize = fromEvent(window, 'resize').pipe(startWith(0), shareReplay(1));
+    resize.pipe(map(() => window.orientation), distinctUntilChanged((prev, curr) => prev === curr))
       .subscribe((e) => {
-        console.log('HIT');
         if (window.matchMedia('(orientation: landscape)').matches) {
-          const rect = this.$el.getBoundingClientRect();
-          this.width = document.documentElement.scrollWidth;
-          this.height = document.documentElement.scrollHeight;
-          this.top = rect.top + window.scrollY;
-          this.bottom = this.height - (this.top + rect.height);
-          this.left = rect.left + window.scrollX;
-          this.right = this.width - (this.left + rect.width);
-
-          this.offsetTop = ((window.innerHeight - rect.height) / 2) - rect.top;
-
-          setTimeout(() => {
-            this.$el.classList.add('fullscreen');
-          }, 1000);
+          this.expandOverlay();
         } else {
-          this.width = 16;
-          this.height = 9;
-          this.top = null;
-          this.bottom = null;
-          this.left = null;
-          this.right = null;
-          this.offsetTop = null;
-          this.$el.classList.remove('fullscreen');
+          this.collapseOverlay();
         }
       });
+
+    resize.pipe(map(() => document.documentElement.clientHeight < window.innerHeight), distinctUntilChanged((prev, curr) => prev === curr))
+      .subscribe((fullscreen) => {
+        console.log(fullscreen);
+      });
+  },
+
+  methods: {
+    async expandOverlay () {
+      const rect = this.$el.getBoundingClientRect();
+      const { scrollWidth: width, scrollHeight: height } = document.documentElement;
+
+      this.top = rect.top + window.scrollY;
+      this.bottom = height - (this.top + rect.height);
+      this.left = rect.left + window.scrollX;
+      this.right = width - (this.left + rect.width);
+      this.offsetTop = ((window.innerHeight - rect.height) / 2) - rect.top;
+      this.aspectRatio = width / height;
+
+      await firstValueFrom(fromEvent(this.$el, 'transitionend')
+        .pipe(filter(e => this.$el.querySelector(':first-child') === e.target))
+      );
+      this.expanded = true;
+    },
+
+    collapseOverlay () {
+      this.top = null;
+      this.bottom = null;
+      this.left = null;
+      this.right = null;
+      this.offsetTop = null;
+      this.aspectRatio = 16 / 9;
+      this.expanded = false;
+    }
   }
 };
 </script>
@@ -86,12 +94,10 @@ div {
   --bottom: 0;
   --left: 0;
   --right: 0;
-  --width: 16;
-  --height: 9;
   --offset-top: 0;
+  --aspect-ratio: calc(16 / 9);
 
   width: 100%;
-  margin: 0;
 
   & iframe {
     position: sticky;
@@ -100,16 +106,11 @@ div {
     display: block;
     width: 100%;
     aspect-ratio: 16/9;
-    transition-duration: 350ms;
+    transition-duration: 250ms;
     transition-property: transform;
   }
 
   @media (orientation: landscape) {
-    /* position: relative;
-    aspect-ratio: calc(var(--width) / var(--height));
-    margin: calc(var(--top) * -1px) calc(var(--right) * -1px) calc(var(--bottom) * -1px) calc(var(--left) * -1px);
-    */
-
     background-color: black;
 
     & iframe {
@@ -118,8 +119,8 @@ div {
       transform: translateY(calc(var(--offset-top) * 1px));
     }
 
-    &.fullscreen {
-      aspect-ratio: calc(var(--width) / var(--height));
+    &.expanded {
+      aspect-ratio: var(--aspect-ratio);
       margin: calc(var(--top) * -1px) calc(var(--right) * -1px) calc(var(--bottom) * -1px) calc(var(--left) * -1px);
 
       & iframe {
