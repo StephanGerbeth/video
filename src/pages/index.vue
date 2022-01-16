@@ -3,7 +3,10 @@
     <p>{{ getText(50) }}</p>
     <div class="box" @click="setFullscreen()" />
     <p>{{ getText(50) }}</p>
-    <you-tube-video />
+
+    <device-orientation-container>
+      <youtube-player />
+    </device-orientation-container>
     <p>{{ getText(100) }}</p>
   </main>
 </template>
@@ -11,11 +14,13 @@
 <script>
 // https://fakerjsdocs.netlify.app/api/lorem.html#sentences-sentencecount-separator
 import faker from '@withshepherd/faker';
-import YouTubeVideo from '@/components/atoms/YouTube.vue';
+import DeviceOrientationContainer from '@/components/atoms/DeviceOrientationContainer.vue';
+import YoutubePlayer from '@/components/atoms/YoutubePlayer.vue';
 
 export default {
   components: {
-    YouTubeVideo
+    DeviceOrientationContainer,
+    YoutubePlayer
   },
 
   methods: {
@@ -31,6 +36,11 @@ export default {
 </script>
 
 <style lang="postcss" scoped>
+main > p {
+  margin-right: env(safe-area-inset-right);
+  margin-left: env(safe-area-inset-left);
+}
+
 .box {
   width: 100%;
   height: 100px;
