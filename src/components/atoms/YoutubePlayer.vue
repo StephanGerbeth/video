@@ -1,19 +1,27 @@
 <template>
-  <div :class="$style.youtube">
-    youtube
+  <div class="youtube">
+    <div :class="$style.player">
+      youtube
+    </div>
+    <transition name="fade-info">
+      <section v-if="showInfo" class="fullscreen-info">
+        scroll down to go to fullscreen
+      </section>
+    </transition>
   </div>
 </template>
 
 <script>
 import Deferred from '@/classes/Deferred';
-import { orientation, STATES } from '@/utils/device';
+import { orientation, fullscreen, STATES } from '@/utils/device';
 
 global.IntersectionObserver = global.IntersectionObserver || class { observe () { /* */ } unobserve () { /* */ }};
 
 export default {
   data () {
     return {
-      loaded: new Deferred()
+      loaded: new Deferred(),
+      showInfo: false
     };
   },
 
@@ -37,6 +45,10 @@ export default {
 
   mounted () {
     this.observer.observe(this.$el);
+
+    fullscreen.subscribe((e) => {
+      this.showInfo = !e.fullscreen && e.orientation === STATES.LANDSCAPE;
+    });
   },
 
   methods: {
@@ -49,8 +61,8 @@ export default {
 
     async initYoutube () {
       const YT = await this.loaded.promise;
-      const player = new YT.Player(this.$el, {
-        videoId: 'c2cxzy-Dar4',
+      const player = new YT.Player(this.$el.querySelector(':first-child'), {
+        videoId: 'TP0T6MGJL9c',
         host: 'https://www.youtube-nocookie.com',
         playerVars: {
           enablejsapi: true,
@@ -85,10 +97,40 @@ export default {
 };
 </script>
 
-<style lang="postcss" module>
+<style lang="postcss" scoped>
 .youtube {
+  & .fullscreen-info {
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100vh;
+    aspect-ratio: none;
+    color: white;
+    opacity: 100%;
+    backdrop-filter: blur(2px);
+  }
+
+  & .fade-info-enter-active,
+  & .fade-info-leave-active {
+    transition-duration: 150ms;
+    transition-property: opacity;
+  }
+
+  & .fade-info-enter,
+  & .fade-info-leave-to {
+    opacity: 0%;
+  }
+}
+</style>
+
+<style lang="postcss" module>
+.player {
+  display: block;
   width: 100%;
-  height: auto;
-  aspect-ratio: 16/9;
+  height: 100%;
 }
 </style>

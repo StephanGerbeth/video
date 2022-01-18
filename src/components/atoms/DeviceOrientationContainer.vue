@@ -1,11 +1,6 @@
 <template>
-  <div :class="{expanded}" :style="cssVars">
+  <div class="container" :class="{expanded}" :style="cssVars">
     <slot />
-    <transition name="fade-info">
-      <section v-if="showInfo" class="fullscreen-info">
-        scroll down to go to fullscreen
-      </section>
-    </transition>
   </div>
 </template>
 
@@ -13,7 +8,7 @@
 import { fromEvent, firstValueFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ipoint } from '@js-basics/vector';
-import { orientation, fullscreen, STATES } from '@/utils/device';
+import { orientation, STATES } from '@/utils/device';
 
 export default {
   data () {
@@ -22,8 +17,7 @@ export default {
       offset: ipoint(),
       min: ipoint(),
       max: ipoint(),
-      expanded: false,
-      showInfo: false
+      expanded: false
     };
   },
 
@@ -45,10 +39,6 @@ export default {
       } else {
         this.collapseOverlay();
       }
-    });
-
-    fullscreen.subscribe((e) => {
-      this.showInfo = !e.fullscreen && this.expanded;
     });
   },
 
@@ -83,60 +73,46 @@ export default {
 </script>
 
 <style lang="postcss" scoped>
-div {
-  --aspect-ratio-x: 16;
-  --aspect-ratio-y: 9;
-  --offset-x: 0;
-  --offset-y: 0;
-  --min-x: 0;
-  --min-y: 0;
-  --max-x: 0;
-  --max-y: 0;
+.container {
+  :root {
+    --aspect-ratio-x: 16;
+    --aspect-ratio-y: 9;
+    --offset-x: 0;
+    --offset-y: 0;
+    --min-x: 0;
+    --min-y: 0;
+    --max-x: 0;
+    --max-y: 0;
+  }
 
-  padding-right: env(safe-area-inset-right);
-  padding-left: env(safe-area-inset-left);
-
-  & :first-child {
+  & > :first-child {
     position: sticky;
     top: 0;
     bottom: 0;
     display: block;
-    width: 100%;
+    width: calc(100%);
+    height: auto;
     aspect-ratio: 16/9;
     transition-duration: 250ms;
     transition-property: transform;
-  }
 
-  & .fullscreen-info {
-    position: fixed;
-    top: 0;
-    left: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100vh;
-    aspect-ratio: none;
-    color: white;
-    opacity: 100%;
-    backdrop-filter: blur(2px);
-  }
-
-  & .fade-info-enter-active,
-  & .fade-info-leave-active {
-    transition-duration: 350ms;
-    transition-property: opacity;
-  }
-
-  & .fade-info-enter,
-  & .fade-info-leave-to {
-    opacity: 0%;
+    &::before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      display: block;
+      width: calc(100% + env(safe-area-inset-right) + env(safe-area-inset-left));
+      height: 100%;
+      margin-right: calc(env(safe-area-inset-right) * -1);
+      margin-left: calc(env(safe-area-inset-left) * -1);
+      content: "";
+      background-color: black;
+    }
   }
 
   @media (orientation: landscape) {
-    background-color: black;
-
-    & :first-child {
+    & > :first-child {
       height: 100vh;
       aspect-ratio: none;
       transform: translateY(calc(var(--offset-y) * 1px));
@@ -144,13 +120,10 @@ div {
 
     &.expanded {
       aspect-ratio: calc(var(--aspect-ratio-x) / var(--aspect-ratio-y));
-      margin:
-        calc(var(--min-y) * -1px)
-        calc(var(--max-x) * -1px)
-        calc(var(--max-y) * -1px)
-        calc(var(--min-x) * -1px);
+      margin-top: calc(var(--min-y) * -1px);
+      margin-bottom: calc(var(--max-y) * -1px);
 
-      & :first-child {
+      & > :first-child {
         transition-property: none;
         transform: none;
       }
