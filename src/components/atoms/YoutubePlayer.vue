@@ -4,8 +4,13 @@
       youtube
     </div>
     <transition name="fade-info">
-      <section v-if="showInfo" class="fullscreen-info">
+      <section v-if="!fullscreen && landscape" class="fullscreen-info">
         scroll down to go to fullscreen
+      </section>
+    </transition>
+    <transition name="fade-info">
+      <section v-if="muted && fullscreen && landscape" class="muted-info" @click="onUnmute">
+        unmute
       </section>
     </transition>
   </div>
@@ -21,7 +26,10 @@ export default {
   data () {
     return {
       loaded: new Deferred(),
-      showInfo: false
+      fullscreen: false,
+      landscape: false,
+      muted: true,
+      player: null
     };
   },
 
@@ -47,7 +55,7 @@ export default {
     this.observer.observe(this.$el);
 
     fullscreen.subscribe((e) => {
-      this.showInfo = !e.fullscreen && e.orientation === STATES.LANDSCAPE;
+      this.fullscreen = e.fullscreen;
     });
   },
 
@@ -61,7 +69,7 @@ export default {
 
     async initYoutube () {
       const YT = await this.loaded.promise;
-      const player = new YT.Player(this.$el.querySelector(':first-child'), {
+      this.player = new YT.Player(this.$el.querySelector(':first-child'), {
         videoId: 'TP0T6MGJL9c',
         host: 'https://www.youtube-nocookie.com',
         playerVars: {
@@ -75,8 +83,7 @@ export default {
           iv_load_policy: 3
         },
         events: {
-          onReady: () => this.onPlayerReady(player)
-          // 'onStateChange': onPlayerStateChange
+          onReady: () => this.onPlayerReady(this.player)
         }
       });
     },
@@ -86,12 +93,20 @@ export default {
       player.playVideo();
 
       orientation.subscribe((e) => {
+        this.landscape = e.orientation === STATES.LANDSCAPE;
         if (e.orientation === STATES.LANDSCAPE) {
-          player.unMute();
+          if (!this.muted) {
+            player.unMute();
+          }
         } else {
           player.mute();
         }
       });
+    },
+
+    onUnmute () {
+      this.muted = false;
+      this.player.unMute();
     }
   }
 };
@@ -99,7 +114,8 @@ export default {
 
 <style lang="postcss" scoped>
 .youtube {
-  & .fullscreen-info {
+  & .fullscreen-info,
+  & .muted-info {
     position: fixed;
     top: 0;
     left: 0;
