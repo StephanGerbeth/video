@@ -99,10 +99,13 @@
     "nuxt-speedkit": "1.3.1",
     "o9n": "^2.1.1",
     "object-fit-images": "github:StephanGerbeth/object-fit-images",
+    "portal-vue": "^2.1.7",
     "reqlim": "0.0.0",
     "rxjs": "7.4.0",
+    "scroll-behavior-polyfill": "^2.0.13",
     "snyk": "1.753.0",
-    "vue-lorem-ipsum": "0.0.1"
+    "vue-lorem-ipsum": "0.0.1",
+    "youtube-player": "^5.5.2"
   },
   "optionalDependencies": {
     "picturefill": "3.0.3",

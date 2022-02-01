@@ -21,11 +21,11 @@ import Deferred from '@/classes/Deferred';
 import { orientation, fullscreen, STATES } from '@/utils/device';
 
 global.IntersectionObserver = global.IntersectionObserver || class { observe () { /* */ } unobserve () { /* */ }};
+const loaded = new Deferred();
 
 export default {
   data () {
     return {
-      loaded: new Deferred(),
       fullscreen: false,
       landscape: false,
       muted: true,
@@ -41,7 +41,7 @@ export default {
           src: 'https://www.youtube.com/player_api',
           async: true,
           charset: 'utf-8',
-          callback: () => this.loaded.resolve(global.YT)
+          callback: () => loaded.resolve(global.YT)
         }
       ]
     };
@@ -68,7 +68,7 @@ export default {
     },
 
     async initYoutube () {
-      const YT = await this.loaded.promise;
+      const YT = await loaded.promise;
       this.player = new YT.Player(this.$el.querySelector(':first-child'), {
         videoId: 'TP0T6MGJL9c',
         host: 'https://www.youtube-nocookie.com',

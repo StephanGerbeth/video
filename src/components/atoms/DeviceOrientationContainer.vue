@@ -1,6 +1,8 @@
 <template>
-  <div class="container" :class="{expanded}" :style="cssVars">
-    <slot />
+  <div class="container">
+    <div class="expander" :class="{expanded}" :style="cssVars">
+      <slot />
+    </div>
   </div>
 </template>
 
@@ -9,6 +11,8 @@ import { fromEvent, firstValueFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ipoint } from '@js-basics/vector';
 import { orientation, STATES } from '@/utils/device';
+
+global.IntersectionObserver = global.IntersectionObserver || class { observe () { /* */ } unobserve () { /* */ }};
 
 export default {
   data () {
@@ -32,10 +36,18 @@ export default {
     }
   },
 
+  created () {
+    this.observer = new IntersectionObserver(([e]) => this.onIntersect(e), {});
+  },
+
   mounted () {
+    this.observer.observe(this.$el);
+
     orientation.subscribe((e) => {
       if (e.orientation === STATES.LANDSCAPE) {
-        this.expandOverlay(e);
+        if (this.intersects) {
+          this.expandOverlay(e);
+        }
       } else {
         this.collapseOverlay();
       }
@@ -43,6 +55,10 @@ export default {
   },
 
   methods: {
+    onIntersect (e) {
+      this.intersects = e.isIntersecting;
+    },
+
     async expandOverlay (e) {
       const rect = this.$el.getBoundingClientRect();
       const elPos = ipoint(rect.left, rect.top);
@@ -54,19 +70,23 @@ export default {
       this.max = ipoint(() => this.aspectRatio - (this.min + elDim));
 
       await firstValueFrom(fromEvent(this.$el, 'transitionend')
-        .pipe(filter(e => this.$el.querySelector(':first-child') === e.target))
+        .pipe(filter(e => this.$el.querySelector('.expander > :first-child') === e.target))
       );
 
       this.expanded = true;
     },
 
     collapseOverlay () {
-      this.aspectRatio = ipoint(16, 9);
-      this.offset = ipoint();
-      this.min = ipoint();
-      this.max = ipoint();
+      if (this.expanded) {
+        this.aspectRatio = ipoint(16, 9);
+        this.offset = ipoint();
+        this.min = ipoint();
+        this.max = ipoint();
 
-      this.expanded = false;
+        this.expanded = false;
+
+        this.$el.scrollIntoView();
+      }
     }
   }
 };
@@ -74,51 +94,55 @@ export default {
 
 <style lang="postcss" scoped>
 .container {
-  :root {
-    --aspect-ratio-x: 16;
-    --aspect-ratio-y: 9;
-    --offset-x: 0;
-    --offset-y: 0;
-    --min-x: 0;
-    --min-y: 0;
-    --max-x: 0;
-    --max-y: 0;
-  }
+  position: relative;
+  aspect-ratio: 16/9;
 
-  & > :first-child {
-    position: sticky;
-    top: 0;
-    bottom: 0;
-    display: block;
-    width: calc(100%);
-    height: auto;
-    aspect-ratio: 16/9;
-    transition-duration: 250ms;
-    transition-property: transform;
+  & .expander {
+    width: 100%;
 
-    &::before {
-      position: absolute;
+    & > :first-child {
+      position: sticky;
       top: 0;
-      left: 0;
-      z-index: -1;
+      bottom: 0;
       display: block;
-      width: calc(100% + env(safe-area-inset-right) + env(safe-area-inset-left));
-      height: 100%;
-      margin-right: calc(env(safe-area-inset-right) * -1);
-      margin-left: calc(env(safe-area-inset-left) * -1);
-      content: "";
-      background-color: black;
+      width: calc(100%);
+      height: auto;
+      aspect-ratio: 16/9;
+      transition-duration: 250ms;
+      transition-property: transform;
+
+      &::before {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: -1;
+        display: block;
+        width: calc(100% + env(safe-area-inset-right) + env(safe-area-inset-left));
+        height: 100%;
+        margin-right: calc(env(safe-area-inset-right) * -1);
+        margin-left: calc(env(safe-area-inset-left) * -1);
+        content: "";
+        background-color: black;
+      }
     }
   }
 
   @media (orientation: landscape) {
-    & > :first-child {
+    & .expander > :first-child {
       height: 100vh;
       aspect-ratio: none;
       transform: translateY(calc(var(--offset-y) * 1px));
     }
 
-    &.expanded {
+    & .expander.expanded {
+      /* will be needed when body is sticky - start */
+
+      position: fixed;
+      top: 0;
+      width: calc(100% - env(safe-area-inset-right) - env(safe-area-inset-left));
+
+      /* will be needed when body is sticky - end */
+
       aspect-ratio: calc(var(--aspect-ratio-x) / var(--aspect-ratio-y));
       margin-top: calc(var(--min-y) * -1px);
       margin-bottom: calc(var(--max-y) * -1px);
@@ -130,4 +154,4 @@ export default {
     }
   }
 }
-</style>>
+</style>
