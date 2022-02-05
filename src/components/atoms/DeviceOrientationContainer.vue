@@ -17,7 +17,7 @@ global.IntersectionObserver = global.IntersectionObserver || class { observe () 
 export default {
   data () {
     return {
-      aspectRatio: ipoint(16, 9),
+      aspectRatio: ipoint(),
       offset: ipoint(),
       min: ipoint(),
       max: ipoint(),
@@ -78,7 +78,7 @@ export default {
 
     collapseOverlay () {
       if (this.expanded) {
-        this.aspectRatio = ipoint(16, 9);
+        this.aspectRatio = ipoint();
         this.offset = ipoint();
         this.min = ipoint();
         this.max = ipoint();
@@ -95,61 +95,51 @@ export default {
 <style lang="postcss" scoped>
 .container {
   position: relative;
-  aspect-ratio: 16/9;
 
   & .expander {
     width: 100%;
+    height: 100%;
 
     & > :first-child {
       position: sticky;
       top: 0;
       bottom: 0;
       display: block;
-      width: calc(100%);
-      height: auto;
-      aspect-ratio: 16/9;
-      transition-duration: 250ms;
+      width: calc(100% + env(safe-area-inset-right) + env(safe-area-inset-left));
+      height: 100%;
+      margin-right: calc(env(safe-area-inset-right) * -1);
+      margin-left: calc(env(safe-area-inset-left) * -1);
+      background-color: black;
+      transition-duration: 200ms;
       transition-property: transform;
-
-      &::before {
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: -1;
-        display: block;
-        width: calc(100% + env(safe-area-inset-right) + env(safe-area-inset-left));
-        height: 100%;
-        margin-right: calc(env(safe-area-inset-right) * -1);
-        margin-left: calc(env(safe-area-inset-left) * -1);
-        content: "";
-        background-color: black;
-      }
     }
   }
 
   @media (orientation: landscape) {
-    & .expander > :first-child {
-      height: 100vh;
-      aspect-ratio: none;
-      transform: translateY(calc(var(--offset-y) * 1px));
-    }
-
-    & .expander.expanded {
-      /* will be needed when body is sticky - start */
-
-      position: fixed;
-      top: 0;
-      width: calc(100% - env(safe-area-inset-right) - env(safe-area-inset-left));
-
-      /* will be needed when body is sticky - end */
-
-      aspect-ratio: calc(var(--aspect-ratio-x) / var(--aspect-ratio-y));
-      margin-top: calc(var(--min-y) * -1px);
-      margin-bottom: calc(var(--max-y) * -1px);
-
+    & .expander {
       & > :first-child {
-        transition-property: none;
-        transform: none;
+        height: 100vh;
+        transform: translateY(calc(var(--offset-y) * 1px));
+      }
+
+      &.expanded {
+        /* will be needed when body is sticky - start */
+
+        position: fixed;
+        top: 0;
+        width: calc(100% - env(safe-area-inset-right) - env(safe-area-inset-left));
+        height: auto;
+
+        /* will be needed when body is sticky - end */
+
+        aspect-ratio: calc(var(--aspect-ratio-x) / var(--aspect-ratio-y));
+        margin-top: calc(var(--min-y) * -1px);
+        margin-bottom: calc(var(--max-y) * -1px);
+
+        & > :first-child {
+          transition-property: none;
+          transform: none;
+        }
       }
     }
   }

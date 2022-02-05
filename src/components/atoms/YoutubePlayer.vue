@@ -1,29 +1,36 @@
 <template>
-  <div class="youtube">
-    <div :class="$style.player">
-      youtube
+  <device-orientation-container>
+    <div class="youtube">
+      <div :class="$style.player">
+        youtube
+      </div>
+      <transition name="fade-info">
+        <section v-if="!fullscreen && landscape" class="fullscreen-info">
+          scroll down to go to fullscreen
+        </section>
+      </transition>
+      <transition name="fade-info">
+        <section v-if="muted && fullscreen && landscape" class="muted-info" @click="onUnmute">
+          unmute
+        </section>
+      </transition>
     </div>
-    <transition name="fade-info">
-      <section v-if="!fullscreen && landscape" class="fullscreen-info">
-        scroll down to go to fullscreen
-      </section>
-    </transition>
-    <transition name="fade-info">
-      <section v-if="muted && fullscreen && landscape" class="muted-info" @click="onUnmute">
-        unmute
-      </section>
-    </transition>
-  </div>
+  </device-orientation-container>
 </template>
 
 <script>
 import Deferred from '@/classes/Deferred';
 import { orientation, fullscreen, STATES } from '@/utils/device';
+import DeviceOrientationContainer from '@/components/atoms/DeviceOrientationContainer.vue';
 
 global.IntersectionObserver = global.IntersectionObserver || class { observe () { /* */ } unobserve () { /* */ }};
 const loaded = new Deferred();
 
 export default {
+  components: {
+    DeviceOrientationContainer
+  },
+
   data () {
     return {
       fullscreen: false,
@@ -69,7 +76,7 @@ export default {
 
     async initYoutube () {
       const YT = await loaded.promise;
-      this.player = new YT.Player(this.$el.querySelector(':first-child'), {
+      this.player = new YT.Player(this.$el.querySelector('.youtube :first-child'), {
         videoId: 'TP0T6MGJL9c',
         host: 'https://www.youtube-nocookie.com',
         playerVars: {
@@ -113,32 +120,36 @@ export default {
 </script>
 
 <style lang="postcss" scoped>
-.youtube {
-  & .fullscreen-info,
-  & .muted-info {
-    position: fixed;
-    top: 0;
-    left: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100vh;
-    aspect-ratio: none;
-    color: white;
-    opacity: 100%;
-    backdrop-filter: blur(2px);
-  }
+.container {
+  aspect-ratio: 16/9;
 
-  & .fade-info-enter-active,
-  & .fade-info-leave-active {
-    transition-duration: 150ms;
-    transition-property: opacity;
-  }
+  & .youtube {
+    & .fullscreen-info,
+    & .muted-info {
+      position: fixed;
+      top: 0;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100vh;
+      aspect-ratio: none;
+      color: white;
+      opacity: 100%;
+      backdrop-filter: blur(2px);
+    }
 
-  & .fade-info-enter,
-  & .fade-info-leave-to {
-    opacity: 0%;
+    & .fade-info-enter-active,
+    & .fade-info-leave-active {
+      transition-duration: 150ms;
+      transition-property: opacity;
+    }
+
+    & .fade-info-enter,
+    & .fade-info-leave-to {
+      opacity: 0%;
+    }
   }
 }
 </style>
@@ -146,7 +157,9 @@ export default {
 <style lang="postcss" module>
 .player {
   display: block;
-  width: 100%;
+  width: calc(100% - env(safe-area-inset-right) - env(safe-area-inset-left));
   height: 100%;
+  margin-right: env(safe-area-inset-right);
+  margin-left: env(safe-area-inset-left);
 }
 </style>
