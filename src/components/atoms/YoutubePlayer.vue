@@ -21,6 +21,7 @@
 <script>
 import Deferred from '@/classes/Deferred';
 import { orientation, fullscreen, STATES } from '@/utils/device';
+import { getHeadScriptDeclaration, getYoutubePlayer } from '@/utils/youtube';
 import DeviceOrientationContainer from '@/components/atoms/DeviceOrientationContainer.vue';
 
 global.IntersectionObserver = global.IntersectionObserver || class { observe () { /* */ } unobserve () { /* */ }};
@@ -29,6 +30,13 @@ const loaded = new Deferred();
 export default {
   components: {
     DeviceOrientationContainer
+  },
+
+  props: {
+    videoId: {
+      type: String,
+      required: true
+    }
   },
 
   data () {
@@ -43,13 +51,7 @@ export default {
   head () {
     return {
       script: [
-        {
-          hid: 'youtube',
-          src: 'https://www.youtube.com/player_api',
-          async: true,
-          charset: 'utf-8',
-          callback: () => loaded.resolve(global.YT)
-        }
+        getHeadScriptDeclaration(loaded)
       ]
     };
   },
@@ -58,57 +60,35 @@ export default {
     this.observer = new IntersectionObserver(([e]) => this.onIntersect(e), {});
   },
 
-  mounted () {
+  async mounted () {
+    this.player = await getYoutubePlayer(this.$el.querySelector('.youtube :first-child'));
+    this.player.loadVideoById(this.videoId);
     this.observer.observe(this.$el);
 
     fullscreen.subscribe((e) => {
       this.fullscreen = e.fullscreen;
+    });
+
+    orientation.subscribe((e) => {
+      this.landscape = e.orientation === STATES.LANDSCAPE;
+      if (e.orientation === STATES.LANDSCAPE) {
+        if (!this.muted) {
+          this.player.unMute();
+        }
+      } else {
+        this.player.mute();
+      }
     });
   },
 
   methods: {
     onIntersect (e) {
       if (e.isIntersecting) {
-        this.observer.unobserve(this.$el);
-        this.initYoutube();
+        this.player.mute();
+        this.player.playVideo();
+      } else {
+        this.player.pauseVideo();
       }
-    },
-
-    async initYoutube () {
-      const YT = await loaded.promise;
-      this.player = new YT.Player(this.$el.querySelector('.youtube :first-child'), {
-        videoId: 'TP0T6MGJL9c',
-        host: 'https://www.youtube-nocookie.com',
-        playerVars: {
-          enablejsapi: true,
-          rel: false,
-          fs: false,
-          origin: window.location.host,
-          playsinline: true,
-          modestbranding: true,
-          showinfo: false,
-          iv_load_policy: 3
-        },
-        events: {
-          onReady: () => this.onPlayerReady(this.player)
-        }
-      });
-    },
-
-    onPlayerReady (player) {
-      player.mute();
-      player.playVideo();
-
-      orientation.subscribe((e) => {
-        this.landscape = e.orientation === STATES.LANDSCAPE;
-        if (e.orientation === STATES.LANDSCAPE) {
-          if (!this.muted) {
-            player.unMute();
-          }
-        } else {
-          player.mute();
-        }
-      });
     },
 
     onUnmute () {
