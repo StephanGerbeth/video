@@ -8,13 +8,13 @@ export default {
   props: {
     load: {
       type: Boolean,
-      default: false
+      default: true
     }
   },
 
   render (h) {
     const component = h(SpeedkitPicture, { props: { ...this.$attrs, critical: this.isCritical } });
-    if (!this.isCritical) {
+    if (!this.isCritical && !this.load) {
       return h(LazyHydrate, { props: { never: true } }, [
         h('noscript', {}, [
           component

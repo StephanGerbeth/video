@@ -9,7 +9,7 @@
           :sources="portrait.sources"
         />
       </figure>
-      <speedkit-final-picture v-bind="landscape" :critical="load" />
+      <speedkit-final-picture v-bind="landscape" :critical="false" :load="load" />
     </div>
   </device-orientation-container>
 </template>
