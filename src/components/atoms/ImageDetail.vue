@@ -15,7 +15,6 @@
 </template>
 
 <script>
-import SpeedkitPicture from 'nuxt-speedkit/components/SpeedkitPicture';
 import SpeedkitFinalPicture from '@/components/atoms/SpeedkitFinalPicture';
 import DeviceOrientationContainer from '@/components/atoms/DeviceOrientationContainer.vue';
 
@@ -38,7 +37,6 @@ export default {
 
   data () {
     return {
-      component: SpeedkitPicture,
       load: false
     };
   },
