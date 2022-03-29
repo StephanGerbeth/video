@@ -1,26 +1,26 @@
 <template>
   <device-orientation-container>
-    <div>
+    <div class="test-container">
       <figure class="wrapper">
-        <speedkit-final-picture
+        <speedkit-picture
           class="box"
           :title="portrait.title"
           :alt="portrait.alt"
           :sources="portrait.sources"
         />
       </figure>
-      <speedkit-final-picture v-bind="landscape" :critical="false" :load="load" />
+      <speedkit-picture class="car" v-bind="landscape" :hydrate="hydrate" :critical="false" @load="onLoad" />
     </div>
   </device-orientation-container>
 </template>
 
 <script>
-import SpeedkitFinalPicture from '@/components/atoms/SpeedkitFinalPicture';
+import SpeedkitPicture from 'nuxt-speedkit/components/SpeedkitPicture';
 import DeviceOrientationContainer from '@/components/atoms/DeviceOrientationContainer.vue';
 
 export default {
   components: {
-    SpeedkitFinalPicture,
+    SpeedkitPicture,
     DeviceOrientationContainer
   },
 
@@ -37,14 +37,20 @@ export default {
 
   data () {
     return {
-      load: false
+      hydrate: false
     };
   },
 
   mounted () {
     setTimeout(() => {
-      this.load = true;
+      this.hydrate = true;
     }, 5000);
+  },
+
+  methods: {
+    onLoad (e) {
+      console.log('HUHUUHU', e);
+    }
   }
 };
 </script>
@@ -67,8 +73,25 @@ export default {
   transition-property: width;
 
   @media (orientation: landscape) {
-    width: 100%;
+    width: auto;
     height: 100vh;
   }
+}
+
+.car {
+  display: none;
+
+  @media (orientation: landscape) {
+    position: absolute;
+    top: 0;
+    display: block;
+    opacity: 50%;
+    transform: scale(2.2);
+    transform-origin: 8.7% 89%;
+  }
+}
+
+.test-container {
+  overflow: hidden;
 }
 </style>
