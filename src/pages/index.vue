@@ -10,13 +10,13 @@
 </template>
 
 <script>
-import SpeedkitLoader from 'nuxt-speedkit/loader';
+import speedkitHydrate from 'nuxt-speedkit/hydrate';
 import { runsInLowPowerMode } from '@/utils/device';
 
 export default {
   components: {
-    YoutubePlayer: SpeedkitLoader(() => import('@/components/atoms/YoutubePlayer.vue')),
-    ImageDetail: SpeedkitLoader(() => import('@/components/atoms/ImageDetail.vue'))
+    YoutubePlayer: speedkitHydrate(() => import('@/components/atoms/YoutubePlayer.vue')),
+    ImageDetail: speedkitHydrate(() => import('@/components/atoms/ImageDetail.vue'))
   },
 
   data () {
