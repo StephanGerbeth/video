@@ -39,7 +39,7 @@ export default {
     const { createCanvas, loadImage } = await import('canvas');
 
     const t = this.$img.getImage(this.mask.sources[0].src);
-    const mask = await loadImage('http://192.168.178.53:8050' + t.url);
+    const mask = await loadImage('http://localhost:8050' + t.url);
     const dimension = ipoint(mask.width, mask.height);
 
     const canvas = createCanvas(...dimension);
@@ -49,9 +49,11 @@ export default {
 
     this.origin = getMaskOrigin(data, dimension);
     this.cssVars = {
-      ...this.origin.position.toCSSVars('position'),
+      ...this.origin.scaleMax.toCSSVars('scale-max'),
+      ...this.origin.scaleCurrent.toCSSVars('scale-current'),
       ...this.origin.dimension.toCSSVars('dimension'),
-      ...this.origin.origin.toCSSVars('origin')
+      ...this.origin.origin.toCSSVars('origin'),
+      ...this.origin.offset.toCSSVars('offset')
     };
     console.log(this.origin);
   },
@@ -80,30 +82,40 @@ const getMaskOrigin = (data, dimension) => {
     }
   }
 
-  console.log(min, max);
-  console.log(ipoint(() => (dimension - ipoint(dimension.y, dimension.y)) / dimension / 2));
+  const scaleMax = ipoint(() => dimension / (max - min));
+  const origin = ipoint(() => ((min + max + ipoint(0, dimension.x - dimension.y)) / 2) / (dimension.x));
 
   return {
-    position: ipoint(() => (min / dimension) - ((dimension - ipoint(dimension.y, dimension.y / 4)) / dimension / 2)),
-    origin: ipoint(() => ((min + max) / 2) / dimension),
-    dimension: ipoint(() => (max - min) / dimension),
-    test: ipoint(() => ((min + max - dimension.y) / 2) / dimension.y)
+    scaleMax,
+    scaleCurrent: ipoint(1, 1),
+    origin,
+    offset: ipoint(() => (((min + max) / 2) - (dimension / 2)) / dimension.x),
+    dimension: ipoint(() => (max - min) / dimension)
   };
 };
 </script>
 
 <style lang="postcss" scoped>
 .zoom {
+  --offset-scaled-x: calc(var(--offset-x) / (var(--scale-max-x) - 1) * (var(--scale-current-x) - 1) * -100%);
+  --offset-scaled-y: calc(var(--offset-y) / (var(--scale-max-x) - 1) * (var(--scale-current-x) - 1) * -100%);
+  --offset-norm-x: calc(var(--offset-x) * -100%);
+  --offset-norm-y: calc(var(--offset-y) * -100%);
+
   display: block;
   height: 100vw;
   overflow: hidden;
   aspect-ratio: none;
 
   & >>> img {
-    width: auto;
+    /* width: auto; */
+
+    object-fit: none;
     height: 100%;
-    transform: translate(calc(var(--position-x) * -100%), calc(var(--position-y) * -100%)) scale(2);
+    transform: translate(var(--offset-scaled-x), var(--offset-scaled-y)) scale(calc(var(--scale-current-x)));
     transform-origin: calc(var(--origin-x) * 100%) calc(var(--origin-y) * 100%);
+
+    /* / var(--scale-max-x) * (--scale-current-x) */
   }
 }
 </style>

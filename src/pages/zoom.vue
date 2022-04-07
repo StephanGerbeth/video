@@ -24,7 +24,7 @@ export default {
         title: '',
         sources: [
           // eslint-disable-next-line no-secrets/no-secrets
-          { src: '/img/macan/macan_felgen_landscape_auto_full_mask_left.png', sizes: { sm: '100vw', md: '100vw', lg: '100vw', xl: '100vw', xxl: '100vw' } }
+          { src: '/img/macan/macan_felgen_landscape_auto_full_mask_right.png', sizes: { sm: '100vw', md: '100vw', lg: '100vw', xl: '100vw', xxl: '100vw' } }
         ]
       },
       picture: {
