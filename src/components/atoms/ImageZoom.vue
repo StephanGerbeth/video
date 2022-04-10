@@ -50,12 +50,9 @@ export default {
     this.origin = getMaskOrigin(data, dimension);
     this.cssVars = {
       ...this.origin.scaleMax.toCSSVars('scale-max'),
-      ...this.origin.scaleCurrent.toCSSVars('scale-current'),
-      ...this.origin.dimension.toCSSVars('dimension'),
       ...this.origin.origin.toCSSVars('origin'),
       ...this.origin.offset.toCSSVars('offset')
     };
-    console.log(this.origin);
   },
 
   computed: {
@@ -82,40 +79,49 @@ const getMaskOrigin = (data, dimension) => {
     }
   }
 
-  const scaleMax = ipoint(() => dimension / (max - min));
-  const origin = ipoint(() => ((min + max + ipoint(0, dimension.x - dimension.y)) / 2) / (dimension.x));
-
   return {
-    scaleMax,
-    scaleCurrent: ipoint(1, 1),
-    origin,
-    offset: ipoint(() => (((min + max) / 2) - (dimension / 2)) / dimension.x),
-    dimension: ipoint(() => (max - min) / dimension)
+    scaleMax: ipoint(() => dimension / (max - min)),
+    origin: ipoint(() => ((min + max) / 2) / (dimension)),
+    offset: ipoint(() => (((min + max) / 2) - (dimension / 2)) / dimension)
   };
 };
 </script>
 
 <style lang="postcss" scoped>
 .zoom {
-  --offset-scaled-x: calc(var(--offset-x) / (var(--scale-max-x) - 1) * (var(--scale-current-x) - 1) * -100%);
-  --offset-scaled-y: calc(var(--offset-y) / (var(--scale-max-x) - 1) * (var(--scale-current-x) - 1) * -100%);
+  --scale-min: 1;
+  --scale-max: min(var(--scale-max-x), var(--scale-max-y));
+  --scale-current: var(--scale-max);
+  --offset-scaled-x: calc(var(--offset-x) / (var(--scale-max) - 1) * (var(--scale-current) - 1) * -100%);
+  --offset-scaled-y: calc(var(--offset-y) / (var(--scale-max) - 1) * (var(--scale-current) - 1) * -100%);
   --offset-norm-x: calc(var(--offset-x) * -100%);
   --offset-norm-y: calc(var(--offset-y) * -100%);
 
+  position: relative;
   display: block;
   height: 100vw;
   overflow: hidden;
-  aspect-ratio: none;
+
+  @media (orientation: landscape) {
+    --scale-current: var(--scale-min);
+
+    height: 100vh;
+  }
 
   & >>> img {
-    /* width: auto; */
-
-    object-fit: none;
+    position: absolute;
+    top: -100%;
+    right: -100%;
+    bottom: -100%;
+    left: -100%;
+    width: auto;
     height: 100%;
-    transform: translate(var(--offset-scaled-x), var(--offset-scaled-y)) scale(calc(var(--scale-current-x)));
+    margin: auto;
+    transition-duration: 1s;
+    transition-property: transform;
+    transform: translate(var(--offset-scaled-x), var(--offset-scaled-y)) scale(calc(var(--scale-current)));
     transform-origin: calc(var(--origin-x) * 100%) calc(var(--origin-y) * 100%);
-
-    /* / var(--scale-max-x) * (--scale-current-x) */
+    object-fit: unset;
   }
 }
 </style>
