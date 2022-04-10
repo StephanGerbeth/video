@@ -47,7 +47,7 @@ export default {
     ctx.drawImage(mask, 0, 0, ...dimension);
     const { data } = ctx.getImageData(0, 0, ...dimension);
 
-    this.origin = getMaskOrigin(data, dimension);
+    this.origin = getFocalPointProperties(data, dimension);
     this.cssVars = {
       ...this.origin.scaleMax.toCSSVars('scale-max'),
       ...this.origin.origin.toCSSVars('origin'),
@@ -67,7 +67,7 @@ export default {
   }
 };
 
-const getMaskOrigin = (data, dimension) => {
+const getFocalPointProperties = (data, dimension) => {
   let min = ipoint(Infinity, Infinity);
   let max = ipoint(-Infinity, -Infinity);
 
@@ -94,8 +94,6 @@ const getMaskOrigin = (data, dimension) => {
   --scale-current: var(--scale-max);
   --offset-scaled-x: calc(var(--offset-x) / (var(--scale-max) - 1) * (var(--scale-current) - 1) * -100%);
   --offset-scaled-y: calc(var(--offset-y) / (var(--scale-max) - 1) * (var(--scale-current) - 1) * -100%);
-  --offset-norm-x: calc(var(--offset-x) * -100%);
-  --offset-norm-y: calc(var(--offset-y) * -100%);
 
   position: relative;
   display: block;
@@ -117,11 +115,19 @@ const getMaskOrigin = (data, dimension) => {
     width: auto;
     height: 100%;
     margin: auto;
-    transition-duration: 1s;
+    transition-timing-function: ease-in-out;
+    transition-duration: 0s;
     transition-property: transform;
     transform: translate(var(--offset-scaled-x), var(--offset-scaled-y)) scale(calc(var(--scale-current)));
     transform-origin: calc(var(--origin-x) * 100%) calc(var(--origin-y) * 100%);
     object-fit: unset;
+
+    @media (orientation: landscape) {
+      --scale-current: var(--scale-min);
+
+      height: 100vh;
+      transition-duration: 1s;
+    }
   }
 }
 </style>
